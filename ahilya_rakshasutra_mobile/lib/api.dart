@@ -46,6 +46,9 @@ class Api {
   Future<Map<String, dynamic>> login(String phone, String password) {
     return _post('/auth/login', {'phone': phone, 'password': password});
   }
+  Future<Map<String, dynamic>> register(String name, String phone, String password) {
+    return _post('/auth/register', {'name': name, 'phone': phone, 'password': password});
+  }
 
   Future<Map<String, dynamic>> createReport({
     required String token,

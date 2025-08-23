@@ -1,57 +1,48 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'api.dart';
-import 'pages/login_page.dart';
+import 'theme.dart';
+import 'pages/landing_page.dart';
+import 'pages/login_page.dart';      // keep if LandingPage uses them internally
+import 'pages/register_page.dart';   // keep if LandingPage uses them internally
 import 'pages/home_page.dart';
 
 void main() => runApp(const App());
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  // Use a global key so we never rely on a stale BuildContext.
+  final GlobalKey<NavigatorState> _navKey = GlobalKey<NavigatorState>();
+
+  String? token;
+
+  void _onAuthed(String t) => setState(() => token = t);
+
+  void _logout() {
+    // clear your app state
+    setState(() => token = null);
+
+    // reset the navigation stack to LandingPage safely
+    _navKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LandingPage()),
+          (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Ahilya RakshaSutra',
-      theme: ThemeData.dark().copyWith(scaffoldBackgroundColor: const Color(0xFF0B1220)),
-      home: const AuthGate(),
+      theme: appTheme,
+      navigatorKey: _navKey,
+      // We still gate the initial screen by token,
+      // but logout always hard-resets the stack via navigatorKey.
+      home: token == null
+          ? const LandingPage()
+          : HomePage(token: token!, onLogout: _logout),
     );
-  }
-}
-
-class AuthGate extends StatefulWidget {
-  const AuthGate({super.key});
-  @override
-  State<AuthGate> createState() => _AuthGateState();
-}
-
-class _AuthGateState extends State<AuthGate> {
-  String? token;
-  bool loading = true;
-
-  @override
-  void initState() { super.initState(); _loadToken(); }
-
-  Future<void> _loadToken() async {
-    final sp = await SharedPreferences.getInstance();
-    setState(() { token = sp.getString('token'); loading = false; });
-  }
-
-  Future<void> _onAuthed(String t) async {
-    final sp = await SharedPreferences.getInstance();
-    await sp.setString('token', t);
-    setState(() => token = t);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    return token == null
-        ? LoginPage(onAuthed: _onAuthed)
-        : HomePage(token: token!, onLogout: () {
-      SharedPreferences.getInstance().then((sp) async {
-        await sp.remove('token');
-        setState(() => token = null);
-      });
-    });
   }
 }

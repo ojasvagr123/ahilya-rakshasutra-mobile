@@ -1,3 +1,4 @@
+import 'package:ahilya_rakshasutra_mobile/pages/register_page.dart';
 import 'package:flutter/material.dart';
 import '../api.dart';
 
@@ -9,8 +10,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final phone = TextEditingController(text: '+911111111111'); // normal user
-  final pass = TextEditingController(text: 'pass');
+  final phone = TextEditingController(text: '+91'); // normal user
+  final pass = TextEditingController(text: '');
   bool busy = false;
   String? err;
   final api = Api();
@@ -31,17 +32,39 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          TextField(controller: phone, decoration: const InputDecoration(labelText: 'Phone (+91...)')),
-          const SizedBox(height: 8),
-          TextField(controller: pass, decoration: const InputDecoration(labelText: 'Password'), obscureText: true),
-          const SizedBox(height: 16),
-          ElevatedButton(onPressed: busy ? null : _login, child: Text(busy ? 'Signing in...' : 'Sign in')),
-          if (err != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(err!, style: const TextStyle(color: Colors.red)))
-        ]),
+      appBar: AppBar(title: const Text('Login | लॉगिन')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Card(
+            elevation: 6,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                TextField(controller: phone, decoration: const InputDecoration(labelText: 'Phone | फोन (+91...)')),
+                const SizedBox(height: 8),
+                TextField(controller: pass, decoration: const InputDecoration(labelText: 'Password | पासवर्ड'), obscureText: true),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(onPressed: busy ? null : _login, child: Text(busy ? 'Signing in...' : 'Sign in | प्रवेश करें')),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => RegisterPage(onAuthed: widget.onAuthed)),
+                    );
+                  },
+                  child: const Text('Create a new account | नया खाता बनाएँ'),
+                ),
+                if (err != null)
+                  Padding(padding: const EdgeInsets.only(top: 8), child: Text(err!, style: const TextStyle(color: Colors.red))),
+              ]),
+            ),
+          ),
+        ),
       ),
     );
   }
